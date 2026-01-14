@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import FloatingLogButton from '@/components/FloatingLogButton';
+import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 
 export default function StudentLayout({
     children,
@@ -14,6 +16,7 @@ export default function StudentLayout({
     const pathname = usePathname();
     const router = useRouter();
     const { user, logout } = useAuth();
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const navItems = [
         { name: 'Dashboard', href: '/student/dashboard', icon: '📊' },
@@ -24,54 +27,82 @@ export default function StudentLayout({
 
     return (
         <div className="flex h-screen bg-gray-50">
-            <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
-                <div className="p-4">
-                    <div className="flex items-center gap-2">
-                        <Image src="/logo-bowl.jpg" alt="UniBites Bowl" width={48} height={48} className="object-contain rounded-lg" />
-                        <div>
-                            <h1 className="text-2xl font-bold text-green-700">UniBites</h1>
-                            <p className="text-xs text-gray-500">Student Portal</p>
-                        </div>
+            {/* Sidebar */}
+            <aside
+                className={`bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 relative ${isCollapsed ? 'w-20' : 'w-64'
+                    }`}
+            >
+                {/* Toggle Button */}
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="absolute -right-3 top-8 bg-white border border-gray-200 rounded-full p-1 shadow-sm hover:bg-gray-50 z-10"
+                >
+                    {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
+
+                {/* Header */}
+                <div className={`p-4 ${isCollapsed ? 'flex justify-center' : ''}`}>
+                    <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+                        <Image
+                            src="/logo-bowl.jpg"
+                            alt="UniBites Bowl"
+                            width={isCollapsed ? 40 : 48}
+                            height={isCollapsed ? 40 : 48}
+                            className="object-contain rounded-lg flex-shrink-0"
+                        />
+                        {!isCollapsed && (
+                            <div className="transition-opacity duration-300">
+                                <h1 className="text-2xl font-bold text-green-700">UniBites</h1>
+                                <p className="text-xs text-gray-500">Student Portal</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-2">
+                {/* Nav Items */}
+                <nav className="flex-1 px-4 space-y-2 mt-4">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition ${isActive
+                                title={isCollapsed ? item.name : ''}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition whitespace-nowrap ${isActive
                                     ? 'bg-green-50 text-green-700'
                                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
+                                    } ${isCollapsed ? 'justify-center px-2' : ''}`}
                             >
-                                <span>{item.icon}</span>
-                                {item.name}
+                                <span className="text-lg">{item.icon}</span>
+                                {!isCollapsed && <span>{item.name}</span>}
                             </Link>
                         );
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-gray-200">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold">
+                {/* User Profile Footer */}
+                <div className="p-4 border-t border-gray-200 overflow-hidden whitespace-nowrap">
+                    <div className={`flex items-center gap-3 mb-4 ${isCollapsed ? 'justify-center' : ''}`}>
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold flex-shrink-0">
                             {user?.name?.[0] || 'S'}
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{user?.name || 'Student'}</p>
-                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                        </div>
+                        {!isCollapsed && (
+                            <div className="flex-1 min-w-0 transition-opacity duration-300">
+                                <p className="text-sm font-medium truncate">{user?.name || 'Student'}</p>
+                                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                            </div>
+                        )}
                     </div>
                     <button
                         onClick={() => {
                             logout();
                             router.push('/login?role=student');
                         }}
-                        className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                        className={`w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-2 ${isCollapsed ? 'justify-center p-2' : ''
+                            }`}
+                        title={isCollapsed ? "Sign Out" : ""}
                     >
-                        Sign Out
+                        {isCollapsed ? <LogOut size={20} /> : "Sign Out"}
                     </button>
                 </div>
             </aside>
