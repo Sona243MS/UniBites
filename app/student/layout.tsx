@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import FloatingLogButton from '@/components/FloatingLogButton';
-import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { Menu, X, LogOut, User } from 'lucide-react';
 
 export default function StudentLayout({
     children,
@@ -16,109 +16,111 @@ export default function StudentLayout({
     const pathname = usePathname();
     const router = useRouter();
     const { user, logout } = useAuth();
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const navItems = [
         { name: 'Dashboard', href: '/student/dashboard', icon: '📊' },
-        { name: 'Menu Browser', href: '/student/menu', icon: '🍔' },
+        { name: 'Menu', href: '/student/menu', icon: '🍔' },
         { name: 'Log Book', href: '/student/logbook', icon: '📝' },
         { name: 'Feedback', href: '/student/feedback', icon: '💬' },
     ];
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Sidebar */}
-            <aside
-                className={`bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 relative ${isCollapsed ? 'w-20' : 'w-64'
-                    }`}
-            >
-                {/* Toggle Button */}
-                <button
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="absolute -right-3 top-8 bg-white border border-gray-200 rounded-full p-1 shadow-sm hover:bg-gray-50 z-10"
-                >
-                    {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-                </button>
-
-                {/* Header */}
-                <div className={`p-4 ${isCollapsed ? 'flex justify-center' : ''}`}>
-                    <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-                        <Image
-                            src="/logo-bowl.jpg"
-                            alt="UniBites Bowl"
-                            width={isCollapsed ? 40 : 48}
-                            height={isCollapsed ? 40 : 48}
-                            className="object-contain rounded-lg flex-shrink-0"
-                        />
-                        {!isCollapsed && (
-                            <div className="transition-opacity duration-300">
-                                <h1 className="text-2xl font-bold text-green-700">UniBites</h1>
-                                <p className="text-xs text-gray-500">Student Portal</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Nav Items */}
-                <nav className="flex-1 px-4 space-y-2 mt-4">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                title={isCollapsed ? item.name : ''}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition whitespace-nowrap ${isActive
-                                    ? 'bg-green-50 text-green-700'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    } ${isCollapsed ? 'justify-center px-2' : ''}`}
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+            {/* Top Navigation Bar */}
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-16 items-center">
+                        {/* Logo & Brand */}
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="p-2 -ml-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 lg:hidden focus:outline-none"
                             >
-                                <span className="text-lg">{item.icon}</span>
-                                {!isCollapsed && <span>{item.name}</span>}
+                                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                            </button>
+                            <Link href="/student/dashboard" className="flex items-center gap-2">
+                                <Image src="/logo-bowl.jpg" alt="UniBites" width={32} height={32} className="rounded-lg object-contain" />
+                                <div className="hidden sm:block">
+                                    <h1 className="text-xl font-bold text-green-700 leading-none">UniBites</h1>
+                                    <p className="text-[10px] text-gray-500 font-medium">Student Portal</p>
+                                </div>
                             </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* User Profile Footer */}
-                <div className="p-4 border-t border-gray-200 overflow-hidden whitespace-nowrap">
-                    <div className={`flex items-center gap-3 mb-4 ${isCollapsed ? 'justify-center' : ''}`}>
-                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold flex-shrink-0">
-                            {user?.name?.[0] || 'S'}
                         </div>
-                        {!isCollapsed && (
-                            <div className="flex-1 min-w-0 transition-opacity duration-300">
-                                <p className="text-sm font-medium truncate">{user?.name || 'Student'}</p>
-                                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                            </div>
-                        )}
-                    </div>
-                    <button
-                        onClick={() => {
-                            logout();
-                            router.push('/login?role=student');
-                        }}
-                        className={`w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-2 ${isCollapsed ? 'justify-center p-2' : ''
-                            }`}
-                        title={isCollapsed ? "Sign Out" : ""}
-                    >
-                        {isCollapsed ? <LogOut size={20} /> : "Sign Out"}
-                    </button>
-                </div>
-            </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-y-auto relative">
-                <FloatingLogButton />
-                <div className="md:hidden bg-white p-3 border-b border-gray-200 flex justify-between items-center sticky top-0 z-20">
-                    <div className="flex items-center gap-2">
-                        <Image src="/logo-bowl.jpg" alt="UniBites Bowl" width={36} height={36} className="object-contain rounded-lg" />
-                        <h1 className="text-xl font-bold text-green-700">UniBites</h1>
+                        {/* Desktop Navigation */}
+                        <nav className="hidden lg:flex space-x-1">
+                            {navItems.map((item) => {
+                                const isActive = pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${isActive
+                                            ? 'bg-green-50 text-green-700'
+                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            }`}
+                                    >
+                                        <span>{item.icon}</span>
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* User Profile / Actions */}
+                        <div className="flex items-center gap-3">
+                            <div className="hidden sm:flex flex-col items-end mr-2">
+                                <span className="text-sm font-bold text-gray-700">{user?.name || 'Student'}</span>
+                                <span className="text-xs text-gray-500">{user?.email}</span>
+                            </div>
+                            <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold border border-green-200">
+                                {user?.name?.[0] || 'S'}
+                            </div>
+                            <button
+                                onClick={() => {
+                                    logout();
+                                    router.push('/login?role=student');
+                                }}
+                                className="p-2 text-gray-400 hover:text-red-600 transition"
+                                title="Sign Out"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div className="p-8">
-                    {children}
-                </div>
+
+                {/* Mobile Navigation Menu (Collapsible) */}
+                {isMenuOpen && (
+                    <div className="lg:hidden border-t border-gray-100 bg-white animate-in slide-in-from-top-2">
+                        <div className="px-2 pt-2 pb-3 space-y-1">
+                            {navItems.map((item) => {
+                                const isActive = pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className={`flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium ${isActive
+                                            ? 'bg-green-50 text-green-700'
+                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            }`}
+                                    >
+                                        <span className="text-xl">{item.icon}</span>
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+            </header>
+
+            {/* Main Content Area */}
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+                <FloatingLogButton />
+                {children}
             </main>
         </div>
     );
